@@ -1,0 +1,15 @@
+
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+
+    	ObjectMapper objectMapper = new ObjectMapper();
+
+        // Парсинг message
+        GameMessageData gameMessageData = null;
+        try {
+            objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+            gameMessageData = objectMapper.readValue(message, GameMessageData.class);
+        } catch (IOException e) {
+            logger.error(err + " Can't parse incoming message data! " + message);
+        }

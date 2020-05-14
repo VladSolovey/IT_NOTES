@@ -1,0 +1,236 @@
+group 'TelegramBot'
+version '1.0'
+
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath("org.springframework.boot:spring-boot-gradle-plugin:2.0.3.RELEASE")
+    }
+}
+
+
+apply plugin: 'java'
+apply plugin: 'eclipse'
+apply plugin: 'idea'
+apply plugin: 'org.springframework.boot'
+
+
+repositories {
+    mavenCentral()
+}
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+dependencies {
+    testCompile group: 'junit', name: 'junit', version: '4.12'
+    compile group: 'org.springframework.boot', name: 'spring-boot-starter-web', version: '2.0.3.RELEASE'
+    compile group: 'org.springframework.boot', name: 'spring-boot-gradle-plugin', version: '2.0.3.RELEASE'
+    compile('org.projectlombok:lombok:1.16.8')
+    compile("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.4.5")
+    compile group: 'org.telegram', name: 'telegrambots', version: '4.2'
+
+  }
+--------------------------------------------------------------------------------------------
+package bot;
+
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.telegram.telegrambots.ApiContextInitializer;
+import org.telegram.telegrambots.meta.TelegramBotsApi;
+import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
+
+@SpringBootApplication
+public class Application {
+
+    public static void main(String[] args) {
+
+        ApiContextInitializer.init();
+
+        TelegramBotsApi botsApi = new TelegramBotsApi();
+
+        try {
+            botsApi.registerBot(new BingotiTelegramBot());
+        } catch (TelegramApiException e) {
+            e.printStackTrace();
+        }
+
+        SpringApplication.run(Application.class, args);
+
+    }
+
+}
+
+---------------------------------------------------------------------------------------------------------------------
+package bot;
+
+import org.springframework.stereotype.Component;
+import org.telegram.telegrambots.bots.TelegramLongPollingBot;
+import org.telegram.telegrambots.meta.api.methods.AnswerCallbackQuery;
+import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
+import org.telegram.telegrambots.meta.api.objects.Update;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardButton;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardRow;
+import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
+
+import java.util.ArrayList;
+import java.util.List;
+
+@Component
+public class BingotiTelegramBot extends TelegramLongPollingBot {
+
+    @Override
+    public String getBotToken() {
+        return "dfljdljsdfjslkdjlksd";
+    }
+
+    @Override
+    public String getBotUsername() {
+        return "Bbbot";
+    }
+
+    @Override
+    public void onUpdateReceived(Update update) {
+        // Проверяем, есть ли сообщение
+        if (update.hasMessage() && update.getMessage().hasText()) {
+
+            SendMessage message = new SendMessage() // Create a SendMessage object with mandatory fields
+                    .setChatId(update.getMessage().getChatId());
+
+            switch (update.getMessage().getText()) {
+
+                case "FAQ":
+                    message.setText("Ответы на ворпосы");
+                    //setButtons2(message);
+                    message.setReplyMarkup(setInline());
+
+                    break;
+                case "Меню":
+                    message.setText("никак");
+                    setButtons(message);
+                    break;
+
+                default:
+                    message.setText("???");
+                    break;
+
+
+            }
+
+
+
+            try {
+
+                execute(message); // Call method to send the message
+            } catch (TelegramApiException e) {
+                e.printStackTrace();
+            }
+        }
+        else  if(update.hasCallbackQuery()) {
+
+            CallbackQuery query = update.getCallbackQuery();
+            AnswerCallbackQuery answer = new AnswerCallbackQuery();
+            answer.setCallbackQueryId(query.getId());
+            answer.setShowAlert(true);
+            answer.setText("Для своего проекта я выбрал Heroku, тк по моему мнению это достаточно удобный хостинг, который имеет свой CLI. Он бесплатен, но на таком тарифе ваш бот при отсутствии запросов будет уходить ");
+            try {
+                execute(answer);
+            } catch (TelegramApiException e) {
+                e.printStackTrace();
+            }
+
+        }
+    }
+
+
+
+    private String getAnswer(String question) {
+
+        question.toLowerCase();
+
+        switch (question) {
+
+            case "кто здесь?":
+                return "нет никто...";
+
+            case "как?":
+                return "никак, товарищь майор!";
+            case "FAQ":
+                return "ответы на вопросы";
+        }
+
+        return "На данный вопрос у меня нет ответа...";
+    }
+
+    public synchronized void setButtons(SendMessage sendMessage) {
+        // Создаем клавиуатуру
+        ReplyKeyboardMarkup replyKeyboardMarkup = new ReplyKeyboardMarkup();
+        sendMessage.setReplyMarkup(replyKeyboardMarkup);
+        replyKeyboardMarkup.setSelective(true);
+        replyKeyboardMarkup.setResizeKeyboard(true);
+        replyKeyboardMarkup.setOneTimeKeyboard(false);
+
+        // Создаем список строк клавиатуры
+        List<KeyboardRow> keyboard = new ArrayList<>();
+
+        // Первая строчка клавиатуры
+        KeyboardRow keyboardFirstRow = new KeyboardRow();
+        // Добавляем кнопки в первую строчку клавиатуры
+        keyboardFirstRow.add(new KeyboardButton("FAQ"));
+
+        // Вторая строчка клавиатуры
+        KeyboardRow keyboardSecondRow = new KeyboardRow();
+        // Добавляем кнопки во вторую строчку клавиатуры
+        keyboardSecondRow.add(new KeyboardButton("ГСЧ"));
+
+        // Добавляем все строчки клавиатуры в список
+        keyboard.add(keyboardFirstRow);
+        keyboard.add(keyboardSecondRow);
+        // и устанваливаем этот список нашей клавиатуре
+        replyKeyboardMarkup.setKeyboard(keyboard);
+    }
+
+    public synchronized void setButtons2(SendMessage sendMessage) {
+        // Создаем клавиуатуру
+        ReplyKeyboardMarkup replyKeyboardMarkup = new ReplyKeyboardMarkup();
+        sendMessage.setReplyMarkup(replyKeyboardMarkup);
+        replyKeyboardMarkup.setSelective(true);
+        replyKeyboardMarkup.setResizeKeyboard(true);
+        replyKeyboardMarkup.setOneTimeKeyboard(false);
+
+        // Создаем список строк клавиатуры
+        List<KeyboardRow> keyboard = new ArrayList<>();
+
+        // Первая строчка клавиатуры
+        KeyboardRow keyboardFirstRow = new KeyboardRow();
+        // Добавляем кнопки в первую строчку клавиатуры
+        keyboardFirstRow.add(new KeyboardButton("Первый вопрос"));
+
+        // Вторая строчка клавиатуры
+        KeyboardRow keyboardSecondRow = new KeyboardRow();
+        // Добавляем кнопки во вторую строчку клавиатуры
+        keyboardSecondRow.add(new KeyboardButton("Второй вопрос"));
+
+        // Добавляем все строчки клавиатуры в список
+        keyboard.add(keyboardFirstRow);
+        keyboard.add(keyboardSecondRow);
+        // и устанваливаем этот список нашей клавиатуре
+        replyKeyboardMarkup.setKeyboard(keyboard);
+    }
+
+    private InlineKeyboardMarkup setInline() {
+        List<List<InlineKeyboardButton>> buttons = new ArrayList<>();
+        List<InlineKeyboardButton> buttons1 = new ArrayList<>();
+        buttons1.add(new InlineKeyboardButton().setText("Кнопка").setCallbackData("17"));
+        buttons.add(buttons1);
+
+        InlineKeyboardMarkup markupKeyboard = new InlineKeyboardMarkup();
+        markupKeyboard.setKeyboard(buttons);
+        return markupKeyboard;
+    }
+}

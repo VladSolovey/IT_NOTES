@@ -1,0 +1,941 @@
+запуск программы: java имя_файла_без_расширения_class
+запуск jar файла: java -jar имя_проги.jar
+
+Числа:
+------
+
+byte 	8 бит 	от -128 до 127
+short 	16 бит 	от -32768 до 32767
+int 	32 бит 	от -2147483648 до 2147483647
+long 	64 бит 	от -9223372036854775808L до 9223372036854775807L 
+
+float 	32 бит 	от -1.4e-45f до 3.4e+38f
+double 	64 бит	от -4.9e-324 до 1.7e+308 
+
+При присвоении переменной значения в тексте программы:
+для типов byte, short ничего не нужно указывать, для типа long нужно ставить l, L в конце числа
+для типов с точкой по умолчанию double, если float указывать принудительно f, F в конце числа
+
+char 	16 бит 	беззнаковое целое число, представляющее собой символ UTF-16 (буквы и цифры)
+
+
+Переменная объявленная во вложенной области действует только внутри неё.
+Уничтожается при выходе из области действия.
+
+Приведение несовместимых типов:
+(целевой тип)значение
+
+При приведении к целому типу вещественного, дробная чать просто отбрасывается.
+Если значение больше целевого, в целевой записывается остаток от деления по модулю на диапазон целевого типа.
+
+Целые и вещественные можно сравнивать между собой.
+
+|| && укороченные операции ИЛИ, И - с ними полностью все логическое выражение не вычисляется
+
+При операциях побитового сдвига знак числа изменится на минус, если в старший разряд попадёт 1.
+
+Long to int: Math.toIntExact(long_var)
+
+Строка в long Long.parseLong("12345") 
+
+Массив
+------
+тип[] имя = new тип[размер];
+тип[][] имя = { {1,2},{3,4} };   // строка, столбец
+
+int[][] array = new int[2][2];
+array[0][0] = 1;
+
+Передать массив в параметр метода без создания переменной:
+new int[]{ 1, 2, 3 }
+
+Размер массива:
+
+массив.length
+массив[номер_строки].length
+
+
+Проверка нахождения в массиве:
+
+int[] a = {1,2,3,4};
+boolean contains = IntStream.of(a).anyMatch(x -> x == 4);
+
+String[] values = {"AB","BC","CD","AE"};
+boolean contains = Arrays.stream(values).anyMatch("s"::equals);
+
+Arrays.asList(yourArray).contains(yourValue) Предупреждение: это не работает для массивов примитивов (для int не сработало)
+
+Управляющие операторы
+---------------------
+
+При использовании if без скобок, во вложенном if, else связан с ближайшим if.
+
+switch (variable) {
+
+  case x:
+
+    break;
+  case y:
+
+    break;
+  default:
+
+}
+
+без break выполнится следующий case
+
+while (...) {...};
+
+do {...} while (--n > 0);
+
+
+for (int n=10; n>0; n--) {...};
+
+переменная n будет существовать только внутри цикла
+
+в описании цикла можно через запятую указывать дополнительные переменные в инициализационной и итерационной частях
+
+инициализационная и итерационная части могут отсутствовать, ; должны оставаться
+
+
+foreach:
+
+for (тип переменная : имя_массива) {...};
+
+
+оператор break метка; можно использовать для выхода из ряда вложенных блоков
+
+метка1: {
+  метка2: {
+    метка3: {
+      break метка2;
+    }
+  }
+  выйдет сюда
+}
+
+оператор continue тоже можно использовать с меткой для выхода на новую итерацию вложенного цикла, метка ставится перед for
+
+
+----
+
+Конструктор класса имеет имя как у класса, без указания типа.
+Конструктор может быть с параметрами.
+
+class Test() {
+  
+
+  Test() {
+     // тело конструктора для иниц. переменных
+  }
+
+}
+
+this - ссылка на вызвавший метод объект
+
+Метод protected void finalize() {}; выполняется перед уничтожением объекта уборщиком, в него можно встроить закрытие внешних ресурсов.
+
+Перегрузка методов - методы с одинаковым именем, но разными параметрами. Тип возвращаемых данных не влияет на поиск метода для вызова.
+Объект можно передавать в параметр.
+
+Статические методы могут вызывать только статические методы и обращаться к стат. переменным. Не могут делать ссылки this, super.
+В класс можно добавить блок
+static {...} для инициализации стат. переменных
+
+Модификатор переменной final делает её глобальной константой.
+
+Члены внутренного (вложенного) класса не могут быть использованы внешним
+Вложенные классы можно определять внутри блока кода.
+
+Строки
+------
+
+Строка это объект, после инициализации его нельзя изменить, поэтому при добавлении к строке надо использовать не String, а StringBuffer, StringBuilder/
+
+Методы:
+
+.length()
+.equals(вторая_строка) - сравнить на равенство, но проверка на нулл == null
+
+if (fcm_token == null || fcm_token.isEmpty())
+
+.charAt(индекс) - символ в позиции
+
+Строка в число:
+Long.parseLong(строка) тоже самое с другими типами чисел
+        
+Проверка на пустоту
+  
+  if (previous_file_name != null && !previous_file_name.trim().isEmpty()) {
+
+.isEmpty() быстрее .equals("")
+
+Извлечь только цифры из строки
+
+   String numberOnly= str.replaceAll("[^0-9]", "");
+
+Извлечь подстроку начинающуюся на #
+
+.substring(format.indexOf("#"));
+
+Заканчивающуюся на # не включая символ
+ss.substring(0, ss.indexOf("#"))
+
+.substring(int beginIndex, int endIndex) 
+
+Заменить все кроме решеток на пробелы
+
+.replaceAll("[^#]", " ");
+
+.matches("") проверка на регулярку regexp
+
+.matches(".*слово.*") - не работает
+
+.lastIndexOf("слово") если не найдено, то -1, если да то позиция от 0 и далее
+
+Конвертация одного символа Char to String
+иначе сравнение со строкой даст отрицательный результат даже если символ равен строке
+
+String.valueOf('1') 
+
+int to String:
+
+String.valueOf(number)
+Integer.toString(number)
+
+перевод кодировки, в проекте Идеи кодировка utf-8 у строковых литералов
+
+new String(utf8String.getBytes("UTF-8"), "windows-1251");
+
+https://docs.oracle.com/javase/8/docs/api/java/lang/String.html#isEmpty--
+
+
+Дата, время
+-----------
+переменная date с текущей датой
+Date date = new Date();
+
+Формат даты в строку
+SimpleDateFormat formatDate = new SimpleDateFormat("ddMMyHHms");
+formatDate.format(переменная_типа_дата)
+
+Строки в дату
+formatDate.parse(переменная_типа_строка_с_датой)
+
+http://proglang.su/java/date-and-time
+
+Таймштамп
+---------
+Таймштамп предназначен для чтения, записи с БД, содержит наносекунды, поэтому его сравнение с типом дата будет возвращать false:
+timestamp.equals(date)
+надо так
+date.equals(timestamp)
+
+сравнение .after() .before()
+
+Дата в таймштамп 
+Date now = new Date();
+Timestamp ts = new Timestamp(now.getTime());
+
+now.getTime() - long количество миллисекунд с 01.01.1970г.
+
+Таймштамп в дату (java.sql.Timestamp to java.util.Date)
+
+((Timestamp)data.get("ts_start")).getTime()
+
+Timestamp now = new Timestamp();
+Date date = new Date(now.getTime());
+
+
+DATE устарел вместо него Calendar
+текущее время брать так
+// Текущее время в секундах
+long currentTime = System.currentTimeMillis() / 1000;
+
+Конвертация Long в Timestamp
+
+Timestamp timestamp = new Timestamp(Переменная_лонг);
+
+---
+        SimpleDateFormat formatDate = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss");
+        Date date = formatDate.parse("11.01.2020 12:00:00");
+        Timestamp ts = new Timestamp(date.getTime());
+
+
+---
+Конвертация Linux time в дату 
+       Date date1 = new Date(new Timestamp(1579718887313l).getTime());
+       System.out.println("date: "+date1);
+
+SimpleDateFormat formatDate = new SimpleDateFormat("dd.MM.y HH:mm:ss");
+formatDate.format(new Date(new Timestamp(tournament.getTs_start()).getTime())));
+
+------
+
+Конвертация long в текстовую дату
+new Date(new Timestamp(tournament.getTs_start()).getTime()));
+
+добавить дни к дате 
+
+DateTime dateTime = new DateTime(date).plusDays(1);
+dateTime.toDate();// here is result
+
+или
+
+Calendar instance = Calendar.getInstance(); // текущая дата
+instance.setTime(date); //устанавливаем дату, с которой будет производить операции
+instance.add(Calendar.DAY_OF_MONTH, 3);// прибавляем 3 дня к установленной дате
+Date newDate = instance.getTime(); // получаем измененную дату
+
+или
+
+Date dt = new Date();
+LocalDateTime.from(dt.toInstant()).plusDays(1);
+
+
+
+в Applicaton перед main вставить
+
+@PostConstruct
+void started() {
+    TimeZone.setDefault(TimeZone.getTimeZone("UTC"));
+}
+
+
+Аргументы переменной длины
+--------------------------
+
+метод(тип ... имя_массива) {
+  
+  имя_массива[индекс]
+
+}
+
+вызов: метод(1, 2, 3);
+
+
+
+Аргументы командной строки
+--------------------------
+
+public class Application {
+
+    static float ErrorValue = 0.01f;
+    static boolean ConsoleOut = false;
+
+    public static void main(String[] args) {
+
+            // первый аргумент число с точкой
+
+            if (args.length > 0 && !args[0].isEmpty()) {
+            try {
+                ErrorValue = Float.parseFloat(args[0]);
+            } catch (NumberFormatException e) {
+                e.printStackTrace();
+            }
+        }
+
+        // если вторым параметром стоит 1 то установить признак вывода в консоль, и ноль или пусто если не устанавливать
+        // тут еще конвертация одного символа типа ЧАР в СТРИНГ чтобы смогло сработать сравнение!!!
+
+        if (args.length > 1 && !args[1].isEmpty()) {
+             ConsoleOut = args[1].equals(String.valueOf('1'));
+        }
+    }
+}    
+
+В другом классе использовать так
+
+private boolean ConsoleOut = Application.ConsoleOut;
+
+
+
+Наследование
+------------
+
+class subClass extends superClass {}
+
+в субклассе свойства и методы супер класса будут как свои собственные
+
+субкласс может наследовать только один супер класс, возможна иерархия
+
+В переменную ссылающуюся на объект супер класса можно присвоить ссылку на подкласс, но доступа того что добавлено в подклассе через такую переменную не будет.
+
+В конструкторе подкласса первой командой можно задать
+super(переменные) для вызова конструктора суперкласса.
+Вместо переменных может быть объектная переменная тип подкласса.
+
+super. может использоваться для обращения к 
+
+-----------------------------------
+Intelij
+
+Ctrl-Alt-T вставить трай кетч
+
+-----------------------------------
+    @Autowired
+    private JdbcTemplate template;
+
+INSERT с возвратом значения
+
+(получаемое значени ссылочное, поэтому такого типа [])
+
+        long[] move_id = {-1L};
+
+        template.query("INSERT INTO rng_dual (ts, user_hash_f, number_f, game_id) VALUES(now(), ?, ?,?) RETURNING id",
+                (ps) -> {
+                    ps.setString(1, rollDice.getUser_hash());
+                    ps.setInt(2, rollDice.getUser_number());
+                    ps.setLong(3, rollDice.getGame_id());
+                },
+                (resultSet) -> {
+                    move_id[0] = resultSet.getLong(1);
+                });
+
+        return new ResponseEntity<>(new JsonResponse(true,"move_id: " ,move_id[0]), HttpStatus.OK);
+
+------------------------------------
+
+template.update("INSERT INTO users (phone,user_hash,activation_code,registration_date) VALUES(?,?,?,now())",
+                  (ps) -> {
+                      ps.setString(1, user.getPhone());
+                      ps.setString(2, hash_user);
+                      ps.setInt(3, code);
+                  });
+
+            template.update("UPDATE agent_affiliates SET amount = amount + ? WHERE agent_id = ? AND club_id = ?",
+                    (ps) -> {
+                        ps.setFloat(1, amount_agent_loser);
+                        ps.setLong(2, agent_id_loser);
+                        ps.setLong(3, club_id_loser);
+                    });
+        }                  
+
+
+без лямбды лучше, иначе если переменная до его вызова изменяется после её объявления, лябда не даёт ее использовать
+
+template.update("update users set last_enter = now(), bad_login_count = ? where phone = ?", login_count+1, user.getUser_phone());
+
+------------------------------------
+
+   
+
+ ------------------------------------
+Запрос одиночного значения
+
+ int count=this.template.queryForObject("select count(*)  from user_affiliates where user_id = ? AND club_id=?", Integer.class, user_id,club_id);   
+
+Запрос двух значений
+
+        Map<String, Object> data;
+        try {
+            data = template.queryForMap("select ts, number_f from rng where id = ?", rollDice.getMove_id());
+        } catch (DataAccessException e) {
+            return new ResponseEntity<>(new JsonResponse(false, "Move ID not found!"), HttpStatus.OK);
+        }
+
+        Date ts = (Date)data.get("ts");
+        int xxx = (int)data.get("number_f")
+
+Запрос строк с данными
+
+  List<Map<String, Object>> clubs = template.queryForList("SELECT id as club_id,name,info,club_hash FROM clubs WHERE user_id_creator=? and active=true", user_id_creator);
+        return new ResponseEntity<>(new JsonResponse(true, "Ok!", clubs), HttpStatus.OK);         
+
+        
+
+-----------------------------------------------
+private List<Map<String, Object>> RefactorClubs(List<Map<String, Object>> clubs) {
+        Iterator<Map<String, Object>> iterator = clubs.iterator();
+        while (iterator.hasNext()) {
+            Map<String, Object> club = iterator.next();
+            long id = 0;
+            for (Map.Entry<String, Object> entry_place : club.entrySet()) {
+                if (entry_place.getKey().equals("club_id")) {
+                    id = (long) entry_place.getValue();
+                }
+            }
+            club.put("name", template.queryForObject("SELECT name FROM clubs WHERE id=? AND active=TRUE", String.class, id));
+            club.put("info", template.queryForObject("SELECT info FROM clubs WHERE id=? AND active=TRUE", String.class, id));
+            club.put("club_hash", template.queryForObject("SELECT club_hash FROM clubs WHERE id=? AND active=TRUE", String.class, id));
+
+        }
+        return clubs;
+    }
+
+--------------------
+@Transactional(rollbackFor=Exception.class)
+
+This will rollback transaction after throwing any exception. ???
+
+--------------------
+
+Запуск по расписанию
+
+в Application добавить @EnableScheduling
+
+перед методом добавить
+@Scheduled(cron="0 57 14 * * *")  каждый день в 14.57
+@Scheduled(cron="*/10 * * * * *") каждые 10 сек
+@Scheduled(fixedRate = 1000)      каждую 1 сек
+
+-----------------------
+необязательный параметр в рест запросе, в теле его нужно будет проверить на нулл 
+
+@RequestParam(value = "file", required = false)
+
+---------------------
+Запись изображения в файл
+
+        // объект файл с путём
+        File file_path = new File(FILE_BASE_PATH + File.separator + file_name);
+
+        try {
+            ImageIO.write(file_content, FILE_TYPE, file_path);
+        } catch (Exception e) {
+            logger.error("Can't write file to disk. User_hash="+user_hash+" file="+file+" File_name_to_save="+file_path);
+            return new ResponseEntity<>(new JsonResponse(false, "Error: can't write file to disk"), HttpStatus.OK);
+        }
+
+Запись текста в файл
+
+        FileWriter fileWriter = new FileWriter("C:\\Projects\\test1\\src\\phones_json.txt");
+        fileWriter.append(js_out);
+        fileWriter.flush();
+        fileWriter.close();
+
+
+Запись текста в файл в кодировке 1251
+        try {
+            PrintWriter file = new PrintWriter("D:/test.txt", "Cp1251");
+            file.println(sb2);
+            file.close();
+        } catch (Exception e) {} 
+
+
+------------
+
+        StringBuilder sb = new StringBuilder();
+        sb.append("Game ");
+        sb.append("\n");
+
+
+       try(FileOutputStream fos=new FileOutputStream("D://log.txt"))
+       {
+           // перевод строки в байты
+           byte[] buffer = sb.toString().getBytes();
+           fos.write(buffer, 0, buffer.length);
+       }
+       catch(IOException ex){
+           System.out.println(ex.getMessage());
+       }
+
+--------------
+
+JSON парсинг
+
+https://ru.stackoverflow.com/questions/745094/%D0%9A%D0%B0%D0%BA-%D0%B8-%D1%87%D0%B5%D0%BC-%D0%BF%D0%B0%D1%80%D1%81%D0%B8%D1%82%D1%8C-json-%D0%BD%D0%B0-java
+
+можно через библиотеку https://github.com/fangyidong/json-simple
+
+Object obj = new JSONParser().parse(строка_с_json);
+
+JSONArray ja = (JSONArray) obj;
+
+Iterator jaI = ja.iterator();
+
+JSONObject jo;
+
+  while (jaI.hasNext()) {
+      jo = (JSONObject) jaI.next();
+      cc = (String) jo.get("mask");
+  }
+
+--------------------
+Парсинг в объект
+
+            ObjectMapper mapper = new ObjectMapper();
+            AppStoreResponse appStore = null;
+            try {
+                appStore = mapper.readValue(jsonString, AppStoreResponse.class);
+                logger.debug("AppStore Response: " + appStore.toString());
+            } catch (JsonParseException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            } catch (JsonMappingException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            } catch (IOException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+
+
+            ObjectMapper mapper = new ObjectMapper();
+            AppStoreResponse appStore = null;
+            try {
+                appStore = mapper.readValue(jsonString, AppStoreResponse.class);
+            } catch (Exception e) {
+                e.printStackTrace();
+            } 
+
+
+--------------------
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+
+        // Парсинг базового message
+        BaseMessageData baseMessageData = null;
+        try {
+            baseMessageData = objectMapper.readValue(message, BaseMessageData.class);
+        } catch (IOException e) {
+            logger.error("/DevelopDataForBotanic - Can't parse incoming base message data! " + message);
+        }
+
+        String content = objectMapper.convertValue(baseMessageData.getContent(), String.class);
+
+
+----------------
+регулярные выражения
+
+        Pattern pattern = Pattern.compile("\\d+");
+        Matcher matcher;
+
+            matcher = pattern.matcher( строка_в_которой_ищем );
+            if (matcher.find()) {
+                cc = matcher.group();   // вернет найденное выражение
+            }
+
+простой способ через строка.matches("")            
+
+
+------------------
+
+Случайно число до 6 знаков
+
+SecureRandom random = new SecureRandom();
+int code = random.nextInt(1000_000);
+
+от 0 до указанной границы (не включая её)
+------------------
+
+Конфигурация ГРЭДЛ
+
+в корне проекта файл build.gradle c содержимым
+
+group 'ANNgroup'
+version '1.0'
+
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath("org.springframework.boot:spring-boot-gradle-plugin:2.0.3.RELEASE")
+    }
+}
+
+
+apply plugin: 'java'
+apply plugin: 'eclipse'
+apply plugin: 'idea'
+apply plugin: 'org.springframework.boot'
+
+
+repositories {
+    mavenCentral()
+}
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+dependencies {
+    testCompile group: 'junit', name: 'junit', version: '4.12'
+    compile group: 'com.googlecode.fannj', name: 'fannj', version: '0.6'
+    compile group: 'net.java.dev.jna', name: 'jna', version: '4.1.0'
+    compile group: 'org.springframework.boot', name: 'spring-boot-starter-web', version: '2.0.3.RELEASE'
+    compile group: 'org.springframework.boot', name: 'spring-boot-gradle-plugin', version: '2.0.3.RELEASE'
+    compile('org.projectlombok:lombok:1.16.8')
+    compile("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.4.5")
+}
+
+-----
+
+для идеи 2019.2.2 
+в градле добавить в dependencies {
+    compileOnly("org.projectlombok:lombok:1.18.8")
+    annotationProcessor("org.projectlombok:lombok:1.18.8")
+    
+-------------
+logging.level.org.springframework.transaction=TRACE
+
+-------------
+
+Данные в application.properties
+
+android.packagename = sss
+
+в классе использовать так:
+
+    @Value("${android.packagename}")
+    private String packageName;
+
+-------------------------------
+СПИСОК LIST
+
+Создание пустого
+List<Map<String, Object>> result = new ArrayList<>();
+
+List<Integer> b = a;  // передача ссылки на массив
+List<Integer> b = new ArrayList<Integer>(a){}; // передача значения
+
+Работа с массивом, который изменяется во время его перебора, для  избежания ошибки конкуренции за данные concurent exception
+List<Participant> participants = new CopyOnWriteArrayList<Participant>(game.getParticipants());
+
+
+Инициализация в одну строку new ArrayList(Arrays.asList(«Java», «Scala», «Groovy»));
+Arrays.asList(«Java», «Scala», «Groovy») создаёт неизменяемый массив, его передать как параметр чтобы создать изменяемый
+
+
+добавить элемент .add(x);
+добавить к списку элементы другого списка .addAll(список);
+
+.size()
+
+список не может содержать тип: char
+
+проверка, содержит ли список элемент .contains(x) (проверено с long работает)
+
+Перебор списка
+
+for (Тип_содержимого element : List_of_elements) { }
+
+
+изменение списка (удаления элемента) через итератор
+
+for (Iterator<Integer> it = set.iterator(); it.hasNext(); ) {
+  if (it.next() % 2 == 0) {
+    it.remove();
+  }
+}
+
+или
+
+Iterator iterator = collection.iterator();
+
+while (iterator.hasNext()) {
+    Object element = iterator.next();
+    if (iDontLikeThisElement(element)) {
+         iterator.remove();
+    }
+}
+
+
+        for (Iterator<Game> gamesIterator = games.iterator(); gamesIterator.hasNext(); ) {
+            Game game = gamesIterator.next();
+
+через ремув
+
+names.removeIf(e -> e.startsWith("A"));
+
+src - должна быть константа
+l.removeIf(e -> e.equals(src));
+
+
+-----------------
+Сортировка списка с объектами
+
+У объекта который будет в списке указать, что он наследует сравнимый класс
+
+public class Fruit implements Comparable<Fruit>{
+
+
+и добавить метод
+
+    public int compareTo(Fruit compareFruit) {
+
+        int compareQuantity = ((Fruit) compareFruit).getQuantity();
+
+        //ascending order
+        //return this.quantity - compareQuantity;
+
+        //descending order
+        return compareQuantity - this.quantity;
+
+    }
+
+}
+
+для сортировки 
+
+ Collections.sort(список_с_объектами);
+
+-----------------
+
+            
+package com.tutorial.collections;
+ 
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.List;
+ 
+/**
+* Created by danil.kuznetsov 
+*/
+public class ListExample {
+   public static void main(String... args) {
+ 
+       List<String> colors = Arrays.asList("red", "yellow",  "blue", "black", "orange", "white","green");
+ 
+       // Basic loop
+       for (int i = 0; i < colors.size(); i++) {
+           String color = colors.get(i);
+           printItemList(color);
+       }
+ 
+ 
+       // foreach
+       for (String color : colors) {
+           printItemList(color);
+       }
+ 
+       // Basic loop with iterator
+       for (Iterator<String> it = colors.iterator(); it.hasNext(); ) {
+           String color = it.next();
+           printItemList(color);
+       }
+ 
+       // Iterator with while loop
+       Iterator<String> it = colors.iterator();
+       while (it.hasNext()) {
+           String color = it.next();
+           printItemList(color);
+       }
+ 
+       // JDK 8 streaming example lambda expression
+       colors.stream().forEach(color -> printItemList(color));
+
+       clubs.stream().forEach(club -> { club.put("messages_ids", messageController.get_club_messages_id(user_id, (Long)club.get("club_id"), club.get("relation").toString()));
+                                         result.add(club);
+                                       });
+                                       
+ 
+       // JDK 8 streaming example method reference
+       colors.stream().forEach(ListExample::printItemList);
+ 
+       // JDK 8 for each with lambda
+       colors.forEach(color -> printItemList(color));
+ 
+       // JDK 8 for each
+       colors.forEach(ListExample::printItemList);
+   }
+ 
+   private static void printItemList(String color) {
+       System.out.println("color: " + color);
+   }
+ 
+}
+
+поиск в списке List<String> matches = list.stream().filter(it -> it.contains("bea")).collect(Collectors.toList());
+
+
+public static void main(String[] args) {
+    List<Integer> numbers = Arrays.asList(1, 2, 3, 4, 5);
+ 
+    for (Integer number : numbers) {
+        System.out.println(number);
+    }
+}
+
+тут src может быть переменной
+
+l.contains(src))
+
+
+
+Сортированный список
+--------------------
+Элементы в нем сами сортируются при добавлении
+
+PriorityQueue<Long> pQ = new PriorityQueue<Long>();
+pQ.add(time);
+
+.remove(); удаление мин элемента (1го)
+
+.peek(); получение значения мин элемента (1го)
+
+
+
+Создание мап
+------------
+new HashMap<String, Object>(){{ put("game_id", game.getGame_id()); put("bank", game.getBank()); }}
+
+List<Map<String, Object>> list = new ArrayList<Map<String, Object>>();
+Map<String, Object> map = new HashMap<String, Object>();
+map.put("foo", "bar");
+list.add(map);
+
+если мапа инициализирована new HashMap... проверять на пустоту map.size()
+
+Перебор мап
+
+    for (Map.Entry<String, String> entry : map.entrySet()) {
+        System.out.println("ID =  " + entry.getKey() + " День недели = " + entry.getValue());           
+    }
+
+
+Получение значения из мап:
+--------------------------
+Date ts = (Date)data.get("ts");
+int xxx = (int)data.get("number_f");
+
+
+----------------------------------------------
+Пакетное сохранение в БД
+
+// пакет для записи в БД
+List<Object[]> batch = new ArrayList<Object[]>();
+
+// Формируем пакет для записи в БД
+for (Transaction t : transactions) {
+
+  batch.add(new Object[] {
+                    game_id,
+                    new Timestamp(t.getTs_end()),
+                    t.isHigh_bet()
+            });
+}
+
+// сохранение пакета транзакций
+template.batchUpdate("INSERT INTO bingoti.game_transactions " +
+                     "(game_id, ts_end, high_bet) " +
+                     "VALUES (?, ?, ?)",
+                    batch);            
+
+----------------------------------------------
+
+Пример комментирования для генерации документации плагином для Idea - JavaDoc
+
+
+    /**
+     * Название <br>
+     * /путь_до_сервиса
+     *
+     * @param stat.user_hash    Хеш пользователя
+     * {@link server.blablabla.DTO.Stat Stat} <br>
+     * JSON пример {}
+     * @return Стандартный ответ + данные
+     * {@link server.blablabla.DTO.JsonResponse JsonResponse} <br>
+     * <br>
+     * Пример ответа <br>
+     * <br>
+     * {"success":true, <br>
+     * "content":[{"date":"2019-03-21","somedata":161.10002,"amount":10.068750396370888}], <br>
+     * "code":1} <br>
+     * <br>
+     * date    Дата <br>
+     * somedata     Данные <br>
+     * amount       Сумма <br>
+     */
+
+-----------------------------
