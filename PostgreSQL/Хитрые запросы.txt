@@ -1,0 +1,95 @@
+http://langtoday.com/?p=428
+
+
+Например, запрос, ищущий людей с совпадающими номерами телефонов может выглядеть так:
+
+
+select 
+  p1.id AS person1,
+  p2.id AS person2,
+  p1.data ->> 'name' AS "p1 name",
+  p2.data ->> 'name' AS "p2 name",
+  pns1 ->> 'type' AS "type", 
+  pns1 ->> 'number' AS "number" 
+from people p1 
+  inner join people p2 
+    on (p1.id > p2.id)
+  cross join lateral jsonb_array_elements(p1.data -> 'phonenumbers') pns1
+  inner join lateral jsonb_array_elements(p2.data -> 'phonenumbers') pns2 
+    on (pns1 -> 'type' = pns2 -> 'type' AND pns1 -> 'number' = pns2 -> 'number');
+
+Услада для глаз, правда?
+
+Нет ничего особо неправильного в поддержке json-функций и операторов, просто странно брать составные данные, подобные объекту, и запрашивать их, пользуясь реляционными join-ами и предикатами.
+
+PostgreSQL хотя бы поддерживает LATERAL; без этого написание запроса превратилось бы в кошмар.
+
+Так случилось, что для этого конкретного случая эквивалентный запрос к реляционной схеме выглядит не особо симпатичнее:
+
+
+SELECT
+  p1.id AS "person1",
+  p2.id AS "person2",
+  p1.name AS "p1 name",
+  p2.name AS "p2 name",
+  pns1.phoneno AS "p1 phone",
+  pns2.phoneno AS "p2 phone"
+FROM
+  person p1
+  INNER JOIN person p2 ON (p1.id < p2.id)
+  INNER JOIN phone pns1 ON (p1.id = pns1.person_id)
+  INNER JOIN phone pns2 ON (p2.id = pns2.person_id)
+WHERE
+  pns1."type" = pns2."type"
+  AND pns1.phoneno = pns2.phoneno;
+
+… но он, скорее всего, выполнится с индексом на (phone.»type», phone.phoneno) *намного* быстрее, чем запрос, основанный на json, и при этом возьмёт намного меньше данных с диска в процессе.
+
+---
+CREATE TABLE people(
+    id serial primary key,
+    data jsonb not null
+);
+
+INSERT INTO people(data) VALUES ($$
+{
+    "name": "Bob",
+    "addresses": [
+        {
+            "street": "Centre",
+            "streetnumber": 24,
+            "town": "Thornlie",
+            "state": "WesternAustralia",
+            "country": "Australia"
+        },
+        {
+            "street": "Example",
+            "streetnumber": "4/311-313",
+            "town": "Auckland",
+            "country": "NewZealand"
+        }
+    ],
+    "phonenumbers": [
+        {
+            "type": "mobile",
+            "number": "12345678"
+        }
+    ]
+}
+$$);
+
+INSERT INTO people(data) VALUES ($$
+{
+  "name": "Fred",
+  "phonenumbers": [
+    { "type": "mobile", "number": "12345678" }
+  ]
+}
+$$);
+
+INSERT INTO people(data) VALUES ($$
+{
+  "name": "John Doe"
+}
+$$);
+---

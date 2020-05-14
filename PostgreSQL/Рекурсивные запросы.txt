@@ -1,0 +1,35 @@
+    WITH RECURSIVE cats ( id, id_up, cat_name, ierarchy, cat_level ) AS (
+    SELECT t1.id, t1.id_up, t1.cat_name, CAST (t1.id AS text) as ierarchy, 1
+        FROM t_dict_cat t1 WHERE t1.id_up IS NULL
+    union
+    select t2.id, t2.id_up, t2.cat_name, CAST (cats.ierarchy ||'->'|| t2.id AS text), cat_level + 1
+         FROM t_dict_cat t2 INNER JOIN cats ON (cats.id = ANY (t2.id_up))      
+    )
+   select * from cats ORDER BY cat_level LIMIT 100
+
+
+
+------------------
+
+    WITH RECURSIVE cats ( id, id_up, cat_name, cat_ids, cat_list, cat_level ) AS (
+    SELECT t1.id, t1.id_up, t1.cat_name, CAST (t1.id AS text) as cat_ids, t1.cat_name as cat_list, 1
+        FROM t_dict_cat t1 WHERE t1.id_up IS NULL 
+    union
+    select t2.id, t2.id_up, t2.cat_name, CAST (cats.cat_ids ||'|'|| t2.id AS text), cats.cat_list ||'|'|| t2.cat_name, cat_level + 1
+         FROM t_dict_cat t2 INNER JOIN cats ON (cats.id = ANY (t2.id_up)) 
+    )
+   select * from cats where id = ANY (string_to_array('1, 10201', ',')::int[]) ORDER BY cat_level DESC LIMIT 1
+
+
+----------
+                                                   WITH RECURSIVE cats ( id, cat_name, order0, order1, id_up ) AS (
+                                                        SELECT t1.id, t1.cat_name, t1.order0, t1.order1, 0 
+                                                        FROM t_dict_cat t1 WHERE t1.id_up IS NULL 
+                                                        UNION
+                                                        SELECT t2.id, t2.cat_name, t2.order0, t2.order1, 
+                                                        --(CASE WHEN t2.id_up[1] = cats.id THEN t2.id_up[1] WHEN t2.id_up[2] = cats.id THEN t2.id_up[2] END ) as id_up
+                                                        cats.id as id_up
+                                                        FROM t_dict_cat t2 INNER JOIN cats ON  (cats.id = ANY (t2.id_up)) 
+                                                        )
+                                                   SELECT * FROM cats                                               
+                                                   WHERE id_up = ANY (array_append(string_to_array('17|107|109|10901', '|')::int[],0)) ORDER BY id_up, order0, cat_name

@@ -1,0 +1,81 @@
+марка пробел модель ищу так:
+
+phraseto_tsquery(:p_key_words) @@ to_tsvector(f||' '||m)
+
+update t_ad set search_words = to_tsvector(title);
+
+
+Основы полнотекстового поиска в PostgreSQL
+
+https://eax.me/postgresql-full-text-search/
+
+https://eax.me/pg-trgm/
+
+
+
+select  phraseto_tsquery('english','moscow international') @@ to_tsvector(jb) from (values ('
+{
+     "abstract": "It is a very long story about true and false",
+     "title": "Peace and War",
+     "publisher": "Moscow International house"
+ }
+'::jsonb)) foo(jb);
+
+
+
+---------------------
+
+нечеткий поиск по н-грамм, не пригодился, в постгрес есть свой, который ищет быстро
+--------------- SQL ---------------
+
+CREATE OR REPLACE FUNCTION public.f_fcs (
+  str1 text,
+  str2 text,
+  lenmax integer = 3
+)
+RETURNS numeric AS
+$body$
+DECLARE
+
+ scntvar integer:=0;
+ scnteq integer:=0;
+ lenstr integer:=1;
+ lmax integer;
+ cntvarsp integer;
+ cnteqsp integer;
+ res NUMERIC;
+      
+BEGIN
+
+ if lenmax<=0 or coalesce(length(ltrim(rtrim(str1))),0)=0
+    or coalesce(length(ltrim(rtrim(str2))),0)=0
+ then return 0;
+ else lmax:=least(lenmax,length(str1),length(str2));
+ end if;
+
+ while lenstr<=lmax loop
+  select countvar, counteq into cntvarsp, cnteqsp from p_seek_eq_in_str(str1,str2,lenstr);
+  scntvar:=scntvar+cntvarsp;
+  scnteq:=scnteq+cnteqsp;
+  select countvar, counteq into cntvarsp, cnteqsp from p_seek_eq_in_str(str2,str1,lenstr);
+  scntvar:=scntvar+cntvarsp;
+  scnteq:=scnteq+cnteqsp;
+  lenstr:=lenstr+1;
+ end loop;
+ if scntvar=0 then
+  return 0;
+ else
+--  res:=scnteq::real/scntvar::real;
+  res:=scnteq::numeric/scntvar::numeric;
+  return res;
+ end if;
+ 
+
+    
+END;
+$body$
+LANGUAGE 'plpgsql'
+VOLATILE
+CALLED ON NULL INPUT
+SECURITY DEFINER
+COST 100;

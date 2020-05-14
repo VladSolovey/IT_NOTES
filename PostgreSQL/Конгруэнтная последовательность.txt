@@ -1,0 +1,72 @@
+Генерация последовательности псевдослучайных чисел
+следующее значение вычисляется из предыдущего
+
+Тестировал на 10 млн итераций, повторов не было, максимальное число в этой цепочке не превышало 4 300 000 000, обычно 8-10 
+знаков.
+
+--------------- SQL ---------------
+
+CREATE OR REPLACE FUNCTION public.f_next_number (
+  x bigint
+)
+RETURNS bigint AS
+$body$
+DECLARE
+
+	A bigint = 214013;
+	C bigint = 2531011;
+	M bigint = 4294967296;
+
+BEGIN
+
+	RETURN (A * x + C) % M;
+
+END;
+$body$
+LANGUAGE 'plpgsql'
+IMMUTABLE
+CALLED ON NULL INPUT
+SECURITY INVOKER
+COST 100;
+
+--------------- SQL ---------------
+
+CREATE OR REPLACE FUNCTION public.f_gen_numbers (
+  maxcnt bigint
+)
+RETURNS text AS
+$body$
+DECLARE
+
+	cnt bigint = 0;
+	x bigint = 1;
+BEGIN
+
+	WHILE cnt < maxcnt LOOP
+    
+        x = f_next_number(x);
+        cnt = cnt + 1;
+        
+        INSERT INTO test_random VALUES (x);
+        
+    END LOOP;
+    
+    RETURN 'DONE';
+
+END;
+$body$
+LANGUAGE 'plpgsql'
+VOLATILE
+CALLED ON NULL INPUT
+SECURITY INVOKER
+COST 100;
+
+------------------------------------------------------------
+
+CREATE TABLE public.test_random (
+  n BIGINT
+) 
+WITH (oids = false);
+
+ALTER TABLE public.test_random
+  ALTER COLUMN n SET STATISTICS 0;

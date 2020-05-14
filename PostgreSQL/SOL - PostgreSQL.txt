@@ -1,0 +1,248 @@
+\password 
+лучше задать в файле .pgpass
+chmod 0600 ~/.pgpass
+
+файл подключения к бд
+/etc/pg_serivice.conf
+
+данные в
+/var/lib/postgre/... data
+CentOS /var/lib/pgsql/...
+
+ps_lsclusters список серверов бд
+initdb первоначальное наполнение каталога data
+pg_createcluster сам вызовет нужную версию initdb
+
+
+как узнать где лежит конфиг
+psql -U postgres -c 'SHOW config_file'
+
+список установленных расширений
+select * from pg_available_extensions where installed_version is not null;
+
+Мониторинг запросов
+
+добавить pg_stat_statements в shared_preload_libraries в postgresql.conf и перезапустить БД
+если доступа нет, исправить файл в своей директории и скопировать
+sudo cp /home/user/postgresql.conf /etc/postgresql/9.5/main
+подключиться к своей БД и в ней create EXTENSION pg_stat_statements;
+
+потом смотреть статистику по запросам в pg_stat_statements 
+
+select * from pg_stat_statements where userid = 16385
+
+очистить select pg_stat_statements_reset()
+
+--------------
+Установка
+
+репозитарий
+yum install https://download.postgresql.org/pub/repos/yum/9.6/redhat/rhel-7-x86_64/pgdg-centos96-9.6-3.noarch.rpm
+
+установка субд
+yum install postgresql96-server
+
+автозагрузка вкл
+systemctl enable postgresql-9.6
+
+создание кластера
+su postgres
+/usr/pgsql-9.6/bin/initdb --encoding UTF-8 --lc-collate='ru_RU.UTF-8' --lc-ctype='ru_RU.UTF-8' --lc-monetary='ru_RU.UTF-8' --lc-numeric='ru_RU.UTF-8' --lc-time='ru_RU.UTF-8' -D /var/lib/pgsql/9.6/data/
+
+Значения локалей сервера (lc_*) можно вывести командой SHOW ALL.
+
+установщик предложил запустить субд так:
+/usr/pgsql-9.6/bin/pg_ctl -D /var/lib/pgsql/9.6/data -l lofgile start
+
+systemctl start postgresql-9.6
+systemctl stop postgresql-9.6
+systemctl restart postgresql-9.6
+
+ubuntu /etc/postgresql-9.1/pg_hba.conf
+local all all trust
+переапусить
+задать пароль для админа бд из psql -U postgres:
+alter role postgres with password '****';
+потом вернуть
+local all all md5
+и перезапустить
+
+в файле /var/lib/pgsql/9.6/data/pg_hba.conf задать требование паролей в подключениях
+host    all             all             192.168.7.0/24            md5
+
+Дополнительно необходимо будет указать СУБД прослушивать требуемые адреса. Делается это в файле конфигурации postgresql.conf
+listen_addresses = '*'
+
+systemctl restart postgresql-9.6
+
+CREATE ROLE test WITH PASSWORD 'test' LOGIN;
+
+открыть порт 5432 
+
+# firewall-cmd --permanent --zone=public --add-port=5432/tcp
+
+Перезагрузим правила:
+
+# firewall-cmd --reload
+
+проверить
+
+# firewall-cmd --zone=public --list-ports
+
+или отключить файрвол
+
+systemctl stop firewalld
+systemctl disable firewalld
+
+
+таймзона в 
+postgresql.conf
+timezone 'UTC'
+log_timezone 'UTC'
+
+------------------------
+copy phones (phone_num, fam, name, otch, date_op) from '/home/test.csv'  with (delimiter '|');
+
+----------------------------
+ищет запись с массивом в котором есть  11 или 29
+
+select * from t_ad where categories && '{11, 29}'
+
+
+--------------------------
+размер таблицы без индексов
+
+SELECT pg_size_pretty( pg_relation_size( 't_dict_adr_house' ) );
+
+
+------------------------------
+Поиск текста
+
+update t_ad set search_words = to_tsvector('платье свадебное') where id=6;
+
+select a_title from v_ads where a_search_words @@ to_tsquery('свадебные & платья')
+
+-------------------------------
+генерация UUID (создать в другой схеме)
+
+CREATE EXTENSION "uuid-ossp" SCHEMA stuff;
+
+select stuff.uuid_generate_v4()   полностью случайный
+
+
+-----------------------------------
+DEBUG / TRACE отладка, логирование, трассировка
+
+в файле C:\Program Files\PostgreSQL\data\postgresql.conf 
+
+log_statement = 'all'			# none, ddl, mod, all
+
+перезагрузить БД или выполнить команду select pg_reload_conf()
+-----------------------------------
+
+
+Индекс для поиска по lower(fff) like 'xxx%'
+
+CREATE INDEX t_dict_adr_obj_idx ON public.t_dict_adr_obj
+  USING btree (lower(offname) text_pattern_ops);
+
+без text_pattern_ops лайк с процентом ищет без индекса
+и без lower в индексе поиск по lower(filed) быстро не работает
+
+Для проверки перед запросом написать: EXPLAIN ANALYSE
+
+------------------------------------
+Бэкап
+
+pg_dump --username=postgres --file=backup.dmp --dbname=databasename --password
+
+ВОССТАНОВЛЕНИЕ
+
+psql -U postgres databasename < d:\dump.sql
+
+или войти в консоль дб
+
+psql -U username databasename
+
+выполнить файл:
+\i /home/user/vasya/backups/backup.dmp
+
+восстановление с очисткой прежней дб (не для текстового дампа)
+pg_restore --verbose --clean --no-acl --no-owner -h localhost -U usernamehere -d my_db /home/user/vasya/backups/backup.dmp
+
+!!! SOL: восстановление на локальный комп (январь 2020г.): !!!
+pg_restore --verbose --clean --no-acl --no-owner -h 127.0.0.1 -p 5431 -U usernamehere -d databasenamehere d:\backup.pgdmp
+
+скрипт авто бэкапа
+
+#!/bin/bash
+echo Database Backup
+filename="/home/user/vasya/dumps/backup_db_$(date +%Y-%m-%d_%k-%M-%S).dmp"
+pg_dump --username=usernamehere --file=$filename --dbname=databasenamehere
+gzip $filename
+
+в папке юзера /home/user создать файл .pgpass с доступом 600 и строкой с паролем
+
+hostname:port:database:username:password
+
+
+-------------------------------
+
+Апдейт из селекта
+
+update users u set activation_date = now(), bad_login_count = 0, status = 2, amount = u.amount + g.amount, gold = u.gold + g.gold 
+
+from (select amount, gold from users where user_hash = 'd84f16c4') g
+
+where u.user_hash = 'e60e61553446e893e'
+
+
+update detail_info d 
+SET aaa = s.aaa 
+FROM  (select user_id, sum(amount) as aaa from diamonds where status=1 and club_id=1 group by user_id, club_id) s
+WHERE d.user_id = s.user_id and d.club_id = 1;
+
+
+
+Вставка из селекта
+
+INSERT INTO user_aff(user_id,club_id,amount) (SELECT id, 1, 0 FROM users WHERE ...) 
+
+
+Разница между датами в минутах
+
+round(extract(epoch FROM age(ts_end, ts_start))/60)
+
+
+Извлечение dd.yyyy из таймштампа
+trim(to_char(extract(month FROM ts),'00'))||'.'||trim(to_char(extract(year FROM ts),'0000')) as mmyyyy
+
+Извлечение даты из таймштампа
+ts::date
+
+
+ через сколько минут начнется date_part('epoch', (t.ts_start - now()))/60
+
+
+SELECT to_timestamp(1195374767); из linux time в timestamp (количество секунд с 1970 в jave это количество МИЛИ секунд в long надо делить на 1000)
+
+                            "AND t.ts_start < (to_timestamp(?) + interval '5 hour') " +
+                            "AND t.ts_start > (to_timestamp(?) - interval '5 hour') " +
+
+Удалить дубли записей (дубль определяется сочетанием game_id, line_f, line_s)
+
+DELETE FROM history WHERE id IN (SELECT id FROM (SELECT id, row_number() over (partition BY game_id, line_f, line_s ORDER BY id) AS rnum FROM history) t WHERE t.rnum > 1);
+
+
+Случайное целое исло от 0 до 10
+
+trunc(random() * 10)
+
+---------------------
+
+create extension if not exists "uuid-ossp";
+
+вот так надо поле с таймштампом проверять, если по часам надо отбирать записи, иначе to_date только по суткам работает
+
+and ts_end > to_timestamp('12.08.2019 00:00:00', 'dd.mm.yyyy hh24:mi:ss')
+and ts_end < to_timestamp('13.08.2019 00:00:00', 'dd.mm.yyyy hh24:mi:ss')

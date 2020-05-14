@@ -1,0 +1,10 @@
+Расшифровать справочник с битмаской в строку
+select array_to_string(array_agg(full_name),', ') from t_dict where bit_order in (select (15 >> 
+generate_series(0,15) & 1) * generate_series(1,16)) and field_name = 'safety'
+
+не сработал, т.к. в место битмаски в запросе у меня целое чило, а должно быть B'1000...' первый бит 
+в постгрес почему-то слева....
+
+select array_to_string(array_agg(full_name),', ') from public.t_dict where bit_order in (select 
+get_bit (p_value, generate_series(0,p_bits-1)) * generate_series(1,p_bits)) and field_name = 
+p_name;

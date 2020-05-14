@@ -1,0 +1,8 @@
+ALTER TABLE public.t_spec
+  ALTER COLUMN complex1 TYPE JSONB [] USING array[complex1];
+
+через стирание :) пока база ещё создаётся
+
+ALTER TABLE public.t_spec ALTER COLUMN distance TYPE JSONB USING null;
+
+ALTER TABLE public.t_spec ALTER COLUMN bit1 TYPE BIGINT USING null;

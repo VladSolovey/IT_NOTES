@@ -1,0 +1,30 @@
+CREATE VIEW widget_sb AS SELECT * FROM widget WHERE column = cast(current_setting('mydomain.myparam') as int)
+
+SET mydomain.myparam = 0
+select * from widget_sb
+[results]
+
+SET mydomain.myparam = 1
+select * from widget_sb
+[distinct results]
+
+-----------------
+
+через функцию
+
+
+create or replace function label_params(parm1 text, parm2 text)
+  returns table (param_label text, param_graphics_label text)
+as
+$body$
+  select ...
+  WHERE region_label = $1 
+     AND model_id = (SELECT model_id FROM models WHERE model_label = $2)
+  ....
+$body$
+language sql;
+
+Затем вы можете сделать:
+
+select *
+from label_params('foo', 'bar')

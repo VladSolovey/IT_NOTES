@@ -1,0 +1,71 @@
+--iNSERT INTO test_vary_obj (data) VALUES ('{"MODEL":"LADA KALINA","POWER_LS":75}'),('{"MODEL":"MATIZ","POWER_LS":51}');
+--iNSERT INTO test_vary_obj (data) VALUES ('{"MODEL":"LADA PRIORA","POWER_LS":102}'),('{"MODEL":"LADA KALINA","POWER_LS":85}');
+
+
+--select data ->> 'MODEL', data ->> 'POWER_LS' from test_vary_obj where data @> '{"MODEL":"LADA KALINA"}'
+select data ->> 'MODEL', data ->> 'POWER_LS' from test_vary_obj where data ->> 'MODEL' like 'LADA%' and (data ->> 'POWER_LS')::int >= 85
+
+Извлечение значений 
+
+из поля 
+
+data ->> 'POWER_LS'
+
+из поля в котором вложен json
+
+--INSERT INTO test_vary_obj (data) VALUES ('{"OBJ_TYPE":1,"ADR_STREET":"Малый Афанасьевский пер.","ADR_BUILDING":7,"DIST":[{"DIST_OBJ":"м. Арабатская","DIST_VAL":5,"DIST_UNIT":"мин. пешком"},{"DIST_OBJ":"авт.ост. Арабатская пл.","DIST_VAL":200,"DIST_UNIT":"м."}]}');
+
+в json поле data, поле DIST содержит несколько записей json
+
+jsonb_array_elements(data#>'{DIST}') ->> 'DIST_OBJ'
+
+--select data ->> 'ADR_STREET', data ->> 'ADR_BUILDING', jsonb_array_elements(data#>'{DIST}') ->> 'DIST_OBJ', jsonb_array_elements(data#>'{DIST}') ->> 'DIST_VAL', jsonb_array_elements(data#>'{DIST}') ->> 'DIST_UNIT' from test_vary_obj where data @> '{"OBJ_TYPE":1}'
+
+
+сравнение в WHERE
+
+проверка на равенство
+
+data @> '{"OBJ_TYPE":1}'
+
+по шаблону
+
+data ->> 'MODEL' like 'LADA%'
+
+числовое сравнение
+
+(data ->> 'POWER_LS')::int >= 85
+
+
+[{"DIST_OBJ":"ост. Лесная","DIST_VAL":500,"DIST_UNIT":"м"},{"DIST_OBJ":"Магазин продукты","DIST_VAL":1,"DIST_UNIT":"км"}]
+
+
+
+{"{\"DIST_OBJ\": \"ост. Лесная\", \"DIST_VAL\": 500, \"DIST_UNIT\": \"м\"}","{\"DIST_OBJ\": \"Магазин продукты\", \"DIST_VAL\": 2, \"DIST_UNIT\": \"км\"}"}
+
+update t_spec set distance = ARRAY[$${"DIST_OBJ": "ост. Лесная", "DIST_VAL": 500, "DIST_UNIT": "м"}$$,$${"DIST_OBJ": "Магазин продукты", "DIST_VAL": 1, "DIST_UNIT": "км"}$$]::jsonb[]
+where id = E'fb167264-f385-4b97-bb6f-d10783ca8c48';
+
+update t_spec set distance = '{"{\"DIST_OBJ\": \"ост. Лесная\", \"DIST_VAL\": 500, \"DIST_UNIT\": \"м\"}","{\"DIST_OBJ\": \"Магазин продукты\", \"DIST_VAL\": 2, \"DIST_UNIT\": \"км\"}"}'
+where id = E'fb167264-f385-4b97-bb6f-d10783ca8c48';
+
+
+select array_to_string(array_agg(s.*),'|') from lateral (select (unnest(distance)->>'DIST_OBJ')||' - '||(unnest(distance)->>'DIST_VAL')||' '||(unnest(distance)->>'DIST_UNIT') from  t_spec) s
+
+
+--SELECT a.id, a.d->>'MODEL' FROM LATERAL (SELECT id, unnest(distance) d FROM t_spec) a WHERE a.d->>'MODEL' LIKE 'Dai%'
+
+select array_to_string(array_agg(s.*),'|') 
+from lateral (select (unnest(distance)->>'MODEL') || ':  ' || (unnest(distance)->>'MODIF') from  t_spec) s
+
+
+----
+SELECT mydata.pk FROM mydata
+  WHERE mydata.data->'people' @> '[{"name":"Bob"}]'::jsonb;
+
+
+валидация json
+
+  https://github.com/gavinwahl/postgres-json-schema/
+
+  https://github.com/furstenheim/is_jsonb_valid
